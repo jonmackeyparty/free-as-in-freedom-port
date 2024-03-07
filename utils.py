@@ -12,12 +12,12 @@ def get_unread_emails(service):
     if 'messages' in response:
         messages.extend(response['messages'])
 
-    while 'nextPageToken' in response:
-        page_token = response['nextPageToken']
-        response = service.users().messages().list(userId='me', q=query, pageToken=page_token).execute()
+    # while 'nextPageToken' in response:
+    #     page_token = response['nextPageToken']
+    #     response = service.users().messages().list(userId='me', q=query, pageToken=page_token).execute()
         
-        if 'messages' in response:
-            messages.extend(response['messages'])
+    #     if 'messages' in response:
+    #         messages.extend(response['messages'])
 
     return messages
   
@@ -27,7 +27,7 @@ def get_email_data(service, message_id):
     payload = msg['payload']
     headers = payload['headers']
     email_data = {'id': message_id}
-
+    email_data['links'] = []
     for header in headers:
         name = header['name']
         value = header['value']
@@ -51,14 +51,18 @@ def get_email_data(service, message_id):
             text = base64.urlsafe_b64decode(data.encode('UTF-8')).decode('UTF-8')
             soup = BeautifulSoup(text, 'html.parser')
             clean_text = soup.get_text()
-            clean_text = remove_hyperlinks(clean_text)
+            links = soup.find_all("a")
+            for link in links:
+                email_data['links'].append(link.get("href"))
             email_data['text'] = clean_text
         else:
             data = payload['body']['data']
             text = base64.urlsafe_b64decode(data.encode('UTF-8')).decode('UTF-8')
             soup = BeautifulSoup(text, 'html.parser')
             clean_text = soup.get_text()
-            clean_text = remove_hyperlinks(clean_text)
+            links = soup.find_all("a")
+            for link in links:
+                email_data['links'].append(link.get("href"))
             email_data['text'] = clean_text
     else:
         data = payload['body']['data']
