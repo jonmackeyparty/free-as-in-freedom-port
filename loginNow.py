@@ -1,57 +1,24 @@
- 
-# import the required libraries 
-from googleapiclient.discovery import build 
-from google_auth_oauthlib.flow import InstalledAppFlow 
-from google.auth.transport.requests import Request 
-import pickle 
-import os.path 
-import email 
+import os
+import re
+import asyncio
+from playwright.async_api import async_playwright
+from playwright.sync_api import Page, expect, sync_playwright
+from dotenv import load_dotenv
 
-from utils import get_unread_emails, get_email_data
-  
-# Define the SCOPES. If modifying it, delete the token.pickle file. 
-SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'] 
-  
-def getEmails(): 
-    # Variable creds will store the user access token. 
-    # If no valid token found, we will create one. 
-    creds = None
-  
-    # The file token.pickle contains the user access token. 
-    # Check if it exists 
-    if os.path.exists('token.pickle'): 
-  
-        # Read the token from the file and store it in the variable creds 
-        with open('token.pickle', 'rb') as token: 
-            creds = pickle.load(token) 
-  
-    # If credentials are not available or are invalid, ask the user to log in. 
-    if not creds or not creds.valid: 
-        if creds and creds.expired and creds.refresh_token: 
-            creds.refresh(Request()) 
-        else: 
-            flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES) 
-            creds = flow.run_local_server(port=0) 
-  
-        # Save the access token in token.pickle file for the next run 
-        with open('token.pickle', 'wb') as token: 
-            pickle.dump(creds, token) 
-  
-    # Connect to the Gmail API 
-    service = build('gmail', 'v1', credentials=creds) 
+load_dotenv()
+async def main():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch()
+        page = await browser.new_page()
+        try:
+            await page.goto("http://accounts.craigslist.org/login")
+            await page.get_by_label("Email / Handle").fill(os.environ.get('USER'))
+            await page.get_by_label("Password").fill(os.environ.get('PASSWORD'))
+            await page.get_by_role("button", name="Log in").click()
+            await page.get_by_role("button", name="click here").click()
+        except Exception as e:
+            print(f"An error occurred: {str(e)}")
+        finally:
+            await page.close()
 
-     # Retrieve unread emails in the inbox
-    unread_emails = get_unread_emails(service)
-
-    # Get total number of unread emails
-    total_emails = len(unread_emails)
-
-    if total_emails >= 5:
-        for idx, message in enumerate(unread_emails, start=1):
-            try:
-                # Retrieve the email text
-                email_data = get_email_data(service, message['id'])
-                print(f"Is it here'{email_data['links']}'?")
-            except:
-                continue    
-getEmails()
+asyncio.run(main())
