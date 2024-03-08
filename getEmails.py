@@ -5,7 +5,7 @@ import pickle
 import os.path 
 import email 
 
-from utils import get_unread_emails, get_email_data
+from utils import get_email_data, list_new_message
   
 # Define the SCOPES. If modifying it, delete the token.pickle file. 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'] 
@@ -14,7 +14,7 @@ def getEmails():
     # Variable creds will store the user access token. 
     # If no valid token found, we will create one. 
     creds = None
-  
+   
     # The file token.pickle contains the user access token. 
     # Check if it exists 
     if os.path.exists('token.pickle'): 
@@ -22,7 +22,7 @@ def getEmails():
         # Read the token from the file and store it in the variable creds 
         with open('token.pickle', 'rb') as token: 
             creds = pickle.load(token) 
-  
+            
     # If credentials are not available or are invalid, ask the user to log in. 
     if not creds or not creds.valid: 
         if creds and creds.expired and creds.refresh_token: 
@@ -38,18 +38,8 @@ def getEmails():
     # Connect to the Gmail API 
     service = build('gmail', 'v1', credentials=creds) 
 
-     # Retrieve unread emails in the inbox
-    unread_emails = get_unread_emails(service)
-
-    # Get total number of unread emails
-    total_emails = len(unread_emails)
-
-    if total_emails >= 5:
-        for idx, message in enumerate(unread_emails, start=1):
-            try:
-                # Retrieve the email text
-                email_data = get_email_data(service, message['id'])
-                print(f"Is it here'{email_data['links']}'?")
-            except:
-                continue    
+    new_msg = list_new_message(service)
+    email_data = get_email_data(service, new_msg)
+    print(email_data['links'][0])
+  
 getEmails()

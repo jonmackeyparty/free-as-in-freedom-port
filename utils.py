@@ -68,6 +68,17 @@ def get_email_data(service, message_id):
         data = payload['body']['data']
         text = base64.urlsafe_b64decode(data.encode('UTF-8')).decode('UTF-8')
         soup = BeautifulSoup(text, 'html.parser')
-        email_data['text'] = soup.get_text()
+        email_data['text'] = soup.get_text()   
 
     return email_data
+
+def list_new_message(service):
+    response = service.users().messages().list(userId='me', maxResults=1, q="is:inbox").execute()
+    messages = []
+
+    if 'messages' in response:
+        messages.extend(response['messages'])
+    
+    return messages[0]['id']
+
+    
