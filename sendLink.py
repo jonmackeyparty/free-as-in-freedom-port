@@ -3,18 +3,15 @@ import re
 import asyncio
 from playwright.async_api import async_playwright
 from playwright.sync_api import Page, expect, sync_playwright
-from dotenv import load_dotenv
 
-load_dotenv()
-
-async def main():
+async def sendLink():
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         page = await browser.new_page()
         try:
             await page.goto("http://accounts.craigslist.org/login")
-            await page.get_by_label("Email / Handle").fill(os.getenv.get('ID'))
-            await page.get_by_label("Password").fill(os.getenv.get('PASSWORD'))
+            await page.get_by_label("Email / Handle").fill(os.getenv('ID'))
+            await page.get_by_label("Password").fill(os.getenv('PASSWORD'))
             await page.get_by_role("button", name="Log in").click()
             await page.get_by_role("button", name="click here").click()
         except Exception as e:
@@ -22,4 +19,3 @@ async def main():
         finally:
             await page.close()
 
-asyncio.run(main())

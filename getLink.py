@@ -10,7 +10,7 @@ from utils import get_email_data, list_new_message
 # Define the SCOPES. If modifying it, delete the token.pickle file. 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'] 
   
-def getEmails(): 
+def getLink(): 
     # Variable creds will store the user access token. 
     # If no valid token found, we will create one. 
     creds = None
@@ -38,8 +38,8 @@ def getEmails():
     # Connect to the Gmail API 
     service = build('gmail', 'v1', credentials=creds) 
 
+    #
     new_msg = list_new_message(service)
     email_data = get_email_data(service, new_msg)
-    print(email_data['links'][0])
+    return email_data['links'][0]
   
-getEmails()

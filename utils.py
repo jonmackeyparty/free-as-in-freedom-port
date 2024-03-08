@@ -4,24 +4,6 @@ from email.mime.multipart import MIMEMultipart
 import re
 from bs4 import BeautifulSoup
 
-def get_unread_emails(service):
-    query = "is:inbox"
-    response = service.users().messages().list(userId='me', q=query).execute()
-    messages = []
-
-    if 'messages' in response:
-        messages.extend(response['messages'])
-
-    # while 'nextPageToken' in response:
-    #     page_token = response['nextPageToken']
-    #     response = service.users().messages().list(userId='me', q=query, pageToken=page_token).execute()
-        
-    #     if 'messages' in response:
-    #         messages.extend(response['messages'])
-
-    return messages
-  
-
 def get_email_data(service, message_id):
     msg = service.users().messages().get(userId='me', id=message_id, format='full').execute()
     payload = msg['payload']
