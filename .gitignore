@@ -1,6 +1,10 @@
-credentials.json
-token.json
 token.pickle
 .env
 notes.md
 *.png
+/texts
+/trainer
+/parser/texts
+*.json
+.python-version
+/__pycache__

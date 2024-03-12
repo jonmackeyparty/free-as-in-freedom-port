@@ -5,7 +5,7 @@ import pickle
 import os.path 
 import email 
 
-from utils import get_email_data, list_new_message
+from mailUtils import get_email_data, list_new_message
   
 # Define the SCOPES. If modifying it, delete the token.pickle file. 
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'] 
