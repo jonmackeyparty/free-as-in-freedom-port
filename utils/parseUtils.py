@@ -3,15 +3,11 @@ import os
 from tinydb import TinyDB, Query
 from dotenv import load_dotenv
 
-
-load_dotenv()
-db = TinyDB(os.getenv('DBFILEPATH'))
-rx_dict = {
-    'TITLE': re.compile(r'.*(?=BODY:)'),
-    'BODY': re.compile(r'(?<=BODY:).*')
-}
-
 def _parse_line(line, arr1, arr2):
+    rx_dict = {
+        'TITLE': re.compile(r'.*(?=BODY:)'),
+        'BODY': re.compile(r'(?<=BODY:).*')
+    }
     for key, rx in rx_dict.items():
         match = rx.search(line)
         if match:
@@ -32,19 +28,9 @@ def create_dict(filepath):
             _parse_line(entry, titles, descriptions)
     return dict(zip(titles, descriptions))
 
-def add_items_to_db(filepath):
-    db = TinyDB('listings.json')
-    data = create_dict(filepath)
-    for key, value in data.items():
-        if not check_dup(key):
-            db.insert({'title': key, 'body': value})
-
-def check_dup(key):
+def check_dup(db, key):
     listing = Query()
     return db.search(listing.title == key)
-
-filepath = os.getenv('TXTFILEPATH')
-add_items_to_db(filepath)
 
 
 

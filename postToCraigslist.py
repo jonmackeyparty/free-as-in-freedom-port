@@ -2,8 +2,8 @@ import os
 import asyncio
 import re
 from dotenv import load_dotenv
-from postUtils import post
-from dbUtils import getPostFromDb, deletePostFromDb
+from utils.postUtils import post
+from utils.dbUtils import getPostFromDb, deletePostFromDb
 
 async def main():
     listing = getPostFromDb()

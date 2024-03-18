@@ -7,5 +7,7 @@ notes.md
 /parser/texts
 *.json
 .python-version
-/__pycache__
+__pycache__
 .DS_STORE
+/image_creator
+/cache
