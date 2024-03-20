@@ -1,7 +1,6 @@
 import re
 import os
 from tinydb import TinyDB, Query
-from dotenv import load_dotenv
 
 def _parse_line(line, arr1, arr2):
     rx_dict = {

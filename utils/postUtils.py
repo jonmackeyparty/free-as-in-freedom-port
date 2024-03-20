@@ -10,7 +10,7 @@ from playwright.sync_api import Page, expect, sync_playwright
 from googleapiclient.discovery import build 
 from google_auth_oauthlib.flow import InstalledAppFlow 
 from google.auth.transport.requests import Request 
-from mailUtils import get_email_data, list_new_message
+from utils.mailUtils import get_email_data, list_new_message
 
 ZIPS = {"bronx": [10453, 10457, 10460, 10458, 10467, 10468, 10451, 10452, 10456, 10454, 10455, 10459, 10474, 10463, 10471, 10466, 10469, 10470, 10475, 10461, 10462,10464, 10465, 10472, 10473], "brooklyn": [11212, 11213, 11216, 11233, 11238, 11209, 11214, 11228, 11204, 11218, 11219, 11230, 11234, 11236, 11239, 11223, 11224, 11229, 11235, 11201, 11205, 11215, 11217, 11231, 11203, 11210, 11225, 11226, 11207, 11208, 11211, 11222, 11220, 11232, 11206, 11221, 11237], "queens": [11361, 11362, 11363, 11364, 11354, 11355, 11356, 11357, 11358, 11359, 11360, 11365, 11366, 11367, 11412, 11423, 11432, 11433, 11434, 11435, 11436, 11101, 11102, 11103, 11104, 11105, 11106, 11374, 11375, 11379, 11385, 11691, 11692, 11693, 11694, 11695, 11697, 11004, 11005, 11411, 11413, 11422, 11426, 11427, 11428, 11429, 11414, 11415, 11416, 11417, 11418, 11419, 11420, 11421, 11368, 11369, 11370, 11372, 11373, 11377, 11378], "staten island": [10302, 10303, 10310, 10306, 10307, 10308, 10309, 10312, 10301, 10304, 10305, 10314]}
 
@@ -73,7 +73,7 @@ async def sendLink():
             print("SUCCESS: LINK SENT")
             await page.close()
 
-async def logInAndPost(link, listing):
+async def logInAndPost(link, listing, filepath):
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         context = await browser.new_context()
@@ -105,7 +105,12 @@ async def logInAndPost(link, listing):
             state = "Post Form"
             await page.get_by_role('button', name='continue').click()
             state = "Location Confirmation Screen"
-            await page.get_by_role('button', name='done with images').click()
+            #Image Selection - new feature
+            async with page.expect_file_chooser() as fc_info:
+                await page.get_by_role("button", name="Add Images").click()
+            file_chooser = await fc_info.value
+            await file_chooser.set_files(filepath)
+            await page.get_by_role("button", name="done with images").click()
             state= "Image Selection Screen"
             await page.locator("#publish_top").get_by_role("button", name="publish").click()
             state = "Post Confirmation Screen"
@@ -114,7 +119,7 @@ async def logInAndPost(link, listing):
             await page_1.goto(post_link)
             try:
                 state = "Post Screenshot"
-                await page_1.set_viewport_size({'width': 414, 'height': 896})
+                await page_1.set_viewport_size({'width': 1024, 'height': 1366})
                 await page_1.screenshot(path=f"./screenshots/{listing.title}.png")
                 print(f"SUCCESS: {listing.title} POSTED AT {post_link}")
             except Exception as e:
@@ -128,10 +133,10 @@ async def logInAndPost(link, listing):
         print(f"SUCCESS: {listing.title} POSTED. CHECK SCREENSHOTS")
         await browser.close()
 
-async def post(listing):
+async def post(listing, filepath):
     await sendLink()
     time.sleep(30)
     link = getLink()
-    await logInAndPost(link, listing)
+    await logInAndPost(link, listing, filepath)
 
   

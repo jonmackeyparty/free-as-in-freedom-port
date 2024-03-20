@@ -1,19 +1,16 @@
 import os
 import random
-from dotenv import load_dotenv
 from tinydb import TinyDB, Query
-from postUtils import newPost
+from utils.postUtils import newPost
 
-load_dotenv()
-DB = TinyDB(os.getenv('DBFILEPATH'))
-
-def getPostFromDb():
-    ind = random.randint(0,len(DB))
-    title = DB.all()[ind]['title']
-    body = DB.all()[ind]['body']
+def getPostFromDb(db):
+    ind = random.randint(0,len(db))
+    title = db.all()[ind]['title']
+    body = db.all()[ind]['body']
     return newPost(title, body)
 
-def deletePostFromDb(listing):
+def deletePostFromDb(db, db2, listing):
     print(f"Removing {listing.title}...")
+    db2.insert({'title': listing.title, 'body': listing.body})
     Post = Query()
-    DB.remove(Post.title == listing.title)
+    db.remove(Post.title == listing.title)
