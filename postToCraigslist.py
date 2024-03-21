@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from tinydb import TinyDB
 from utils.postUtils import post
 from utils.dbUtils import getPostFromDb, deletePostFromDb
+from utils.mailUtils import send_text
 
 async def main():
     load_dotenv()
@@ -14,7 +15,8 @@ async def main():
     listing = getPostFromDb(db)
     output_file = re.sub('[^A-Za-z0-9]+', '', listing.title)
     write_path = f"{img_file_path}{output_file}.png"
-    await post(listing, write_path)
+    link = await post(listing, write_path)
+    send_text(listing, link)
     deletePostFromDb(db, db2, listing)
 
 if __name__ == "__main__":

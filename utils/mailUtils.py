@@ -7,12 +7,15 @@ import asyncio
 import pickle  
 import email 
 import mimetypes
+from dotenv import load_dotenv
+from tinydb import TinyDB
 from playwright.async_api import async_playwright
 from playwright.sync_api import Page, expect, sync_playwright
 from googleapiclient.discovery import build 
 from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow 
 from google.auth.transport.requests import Request 
+from google.oauth2.credentials import Credentials
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from email.message import EmailMessage
@@ -22,9 +25,9 @@ from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
 
 # Define the SCOPES. If modifying it, delete the token.pickle file. 
-SCOPES = ["https://www.googleapis.com/auth/gmail.compose"] 
+SCOPES = ["https://www.googleapis.com/auth/gmail.readonly", "https://www.googleapis.com/auth/gmail.compose"] 
 
-def getLink(): 
+def mailAuth(): 
     # Variable creds will store the user access token. 
     # If no valid token found, we will create one. 
     creds = None
@@ -48,10 +51,13 @@ def getLink():
         # Save the access token in token.pickle file for the next run 
         with open('token.pickle', 'wb') as token: 
             pickle.dump(creds, token) 
-  
+
     # Connect to the Gmail API 
     service = build('gmail', 'v1', credentials=creds) 
+    return service
 
+def getLink():
+    service = mailAuth()
     new_msg = list_new_message(service)
     email_data = get_email_data(service, new_msg)
     print("SUCCESS: LINK RETRIEVED")
@@ -132,4 +138,34 @@ def list_new_message(service):
     
     return messages[0]['id']
 
-    
+def send_text(listing, link):
+  #Returns: Draft object, including draft id and message meta data.
+  load_dotenv()
+  service = mailAuth()
+
+  try:
+    # create gmail api client
+    message = EmailMessage()
+
+    # headers
+    message["To"] = os.getenv('SMS')
+    message["From"] = os.getenv('ID')
+    message["Subject"] = listing.title
+
+    # text
+    message.set_content(f"{listing.title}:{listing.body} posted to {link}")
+
+    encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
+
+    create_message = {"raw": encoded_message}
+    send_message = (
+        service.users()
+        .messages()
+        .send(userId="me", body=create_message)
+        .execute()
+    )
+    print(f'Message Id: {send_message["id"]}')
+  except HttpError as error:
+    print(f"An error occurred: {error}")
+    send_message = None
+  return send_message
