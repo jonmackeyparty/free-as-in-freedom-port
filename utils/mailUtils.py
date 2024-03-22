@@ -139,7 +139,6 @@ def list_new_message(service):
     return messages[0]['id']
 
 def send_text(listing, link):
-  #Returns: Draft object, including draft id and message meta data.
   load_dotenv()
   service = mailAuth()
 

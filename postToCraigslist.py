@@ -15,8 +15,8 @@ async def main():
     listing = getPostFromDb(db)
     output_file = re.sub('[^A-Za-z0-9]+', '', listing.title)
     write_path = f"{img_file_path}{output_file}.png"
-    link = await post(listing, write_path)
-    send_text(listing, link)
+    post_link = await post(listing, write_path)
+    send_text(listing, post_link)
     deletePostFromDb(db, db2, listing)
 
 if __name__ == "__main__":

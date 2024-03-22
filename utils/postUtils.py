@@ -84,6 +84,7 @@ async def post(listing, filepath):
     await sendLink()
     time.sleep(30)
     link = getLink()
-    await logInAndPost(link, listing, filepath)
+    post_link = await logInAndPost(link, listing, filepath)
+    return post_link
 
   
