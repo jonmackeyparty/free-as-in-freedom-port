@@ -34,24 +34,20 @@ def mailAuth():
    
     # The file token.pickle contains the user access token. 
     # Check if it exists 
-    if os.path.exists('token.pickle'): 
-  
+    if os.path.exists('token.pickle'):  
         # Read the token from the file and store it in the variable creds 
         with open('token.pickle', 'rb') as token: 
-            creds = pickle.load(token) 
-            
+            creds = pickle.load(token)            
     # If credentials are not available or are invalid, ask the user to log in. 
     if not creds or not creds.valid: 
         if creds and creds.expired and creds.refresh_token: 
             creds.refresh(Request()) 
         else: 
             flow = InstalledAppFlow.from_client_secrets_file('credentials.json', SCOPES) 
-            creds = flow.run_local_server(port=0) 
-  
+            creds = flow.run_local_server(port=0)  
         # Save the access token in token.pickle file for the next run 
         with open('token.pickle', 'wb') as token: 
             pickle.dump(creds, token) 
-
     # Connect to the Gmail API 
     service = build('gmail', 'v1', credentials=creds) 
     return service
@@ -94,7 +90,6 @@ def get_email_data(service, message_id):
             email_data['date'] = value
         if name == 'Subject':
             email_data['subject'] = value
-
     if 'parts' in payload:
         parts = payload['parts']
         data = None
@@ -103,7 +98,6 @@ def get_email_data(service, message_id):
                 data = part['body']['data']
             elif part['mimeType'] == 'text/html':
                 data = part['body']['data']
-
         if data is not None:
             text = base64.urlsafe_b64decode(data.encode('UTF-8')).decode('UTF-8')
             soup = BeautifulSoup(text, 'html.parser')
@@ -126,36 +120,28 @@ def get_email_data(service, message_id):
         text = base64.urlsafe_b64decode(data.encode('UTF-8')).decode('UTF-8')
         soup = BeautifulSoup(text, 'html.parser')
         email_data['text'] = soup.get_text()   
-
     return email_data
 
 def list_new_message(service):
     response = service.users().messages().list(userId='me', maxResults=1, q="is:inbox").execute()
     messages = []
-
     if 'messages' in response:
-        messages.extend(response['messages'])
-    
+        messages.extend(response['messages'])  
     return messages[0]['id']
 
 def send_text(listing, link):
   load_dotenv()
   service = mailAuth()
-
   try:
     # create gmail api client
     message = EmailMessage()
-
     # headers
     message["To"] = os.getenv('SMS')
     message["From"] = os.getenv('ID')
     message["Subject"] = listing.title
-
     # text
-    message.set_content(f"{listing.title}:{listing.body} posted to {link}")
-
+    message.set_content(f"{listing.title} posted to {link} ")
     encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-
     create_message = {"raw": encoded_message}
     send_message = (
         service.users()
