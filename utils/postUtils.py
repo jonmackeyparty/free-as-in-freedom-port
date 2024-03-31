@@ -62,8 +62,9 @@ async def logInAndPost(link, listing, filepath):
             await page_1.goto(post_link)
             try:
                 state = "Post Screenshot"
+                output_file = re.sub('[^A-Za-z0-9]+', '', listing.title)
                 await page_1.set_viewport_size({'width': 479, 'height': 959})
-                await page_1.screenshot(path=f"./screenshots/{listing.title}.png")
+                await page_1.screenshot(path=f"./screenshots/{output_file}.png")
                 print(f"SUCCESS: {listing.title} POSTED AT {post_link}")
             except Exception as e:
                 await page.screenshot(path="./screenshots/ERROR.png")
@@ -79,7 +80,7 @@ async def logInAndPost(link, listing, filepath):
 
 async def post(listing, filepath):
     await sendLink()
-    time.sleep(30)
+    time.sleep(15)
     link = getLink()
     post_link = await logInAndPost(link, listing, filepath)
     return post_link

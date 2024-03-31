@@ -5,7 +5,7 @@ import random
 import re
 import asyncio
 import pickle  
-import email 
+# import email 
 import mimetypes
 from dotenv import load_dotenv
 from tinydb import TinyDB
@@ -16,12 +16,12 @@ from googleapiclient.errors import HttpError
 from google_auth_oauthlib.flow import InstalledAppFlow 
 from google.auth.transport.requests import Request 
 from google.oauth2.credentials import Credentials
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from email.message import EmailMessage
-from email.mime.base import MIMEBase
-from email.mime.image import MIMEImage
-from email.mime.text import MIMEText
+# from email.mime.text import MIMEText
+# from email.mime.multipart import MIMEMultipart
+# from email.message import EmailMessage
+# from email.mime.base import MIMEBase
+# from email.mime.image import MIMEImage
+# from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
 
 # Define the SCOPES. If modifying it, delete the token.pickle file. 
@@ -128,29 +128,3 @@ def list_new_message(service):
     if 'messages' in response:
         messages.extend(response['messages'])  
     return messages[0]['id']
-
-def send_text(listing, link):
-  load_dotenv()
-  service = mailAuth()
-  try:
-    # create gmail api client
-    message = EmailMessage()
-    # headers
-    message["To"] = os.getenv('SMS')
-    message["From"] = os.getenv('ID')
-    message["Subject"] = listing.title
-    # text
-    message.set_content(f"{listing.title} posted to {link} ")
-    encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
-    create_message = {"raw": encoded_message}
-    send_message = (
-        service.users()
-        .messages()
-        .send(userId="me", body=create_message)
-        .execute()
-    )
-    print(f'Message Id: {send_message["id"]}')
-  except HttpError as error:
-    print(f"An error occurred: {error}")
-    send_message = None
-  return send_message
