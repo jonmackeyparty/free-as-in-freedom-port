@@ -26,7 +26,7 @@ async def main():
     p1 = multiprocessing.Process(target=ngrok_server)
     p2 = multiprocessing.Process(target=send_twilio_with_image, args=(listing.title, f"{ngrok_url}{filename}"))
     p1.start()
-    time.sleep(15)
+    time.sleep(10)
     p2.start()
     
 if __name__ == "__main__":

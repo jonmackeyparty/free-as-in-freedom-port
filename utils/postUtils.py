@@ -53,6 +53,7 @@ async def logInAndPost(link, listing, filepath):
                 await page.get_by_role("button", name="Add Images").click()
             file_chooser = await fc_info.value
             await file_chooser.set_files(filepath)
+            time.sleep(5)
             await page.get_by_role("button", name="done with images").click()
             state= "Image Selection Screen"
             await page.locator("#publish_top").get_by_role("button", name="publish").click()
