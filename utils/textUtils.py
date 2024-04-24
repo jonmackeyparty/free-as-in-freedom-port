@@ -20,7 +20,7 @@ def send_twilio_with_image(title, url):
                         to=phone
                     )
 
-    print(message.sid)
+    print(f'Message {message.sid} sent to {phone} with image {url}')
 
 def ngrok_server():
     port = 3000
