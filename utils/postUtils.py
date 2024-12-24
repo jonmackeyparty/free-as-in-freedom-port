@@ -24,13 +24,13 @@ async def logInAndPost(link, listing, filepath):
         try:
             state = "Initial Login"
             await page.goto(link)
-            await page.get_by_role('combobox').select_option(value='nyc')
-            await page.get_by_role('button', name='go').click()
+            await page.get_by_role("link", name="make new post").click()
             if page.url.endswith("copyfromanother"):
                 await page.get_by_role("button", name="skip").click()
-                await page.locator("#ui-id-1-button").get_by_text("new york city").click()
+                await page.locator("#ui-id-1-button").click()
                 await page.get_by_role("option", name="new york city").click()
                 await page.get_by_role("button", name="continue").click()
+                await page.screenshot(path="./screenshots/LINE33.png")
                 await page.get_by_text(listing.borough).click()
                 state = "ReUse Screen"
             else:
