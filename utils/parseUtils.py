@@ -31,6 +31,11 @@ def check_dup(db, key):
     listing = Query()
     return db.search(listing.title == key)
 
-
+def remove_child_terms(prompt):
+    """Removes child terms from prompt"""
+    child_terms = ['child', 'children', 'kid', 'kids', 'baby', 'babies']
+    for term in child_terms:
+        prompt = re.sub(r'\b' + term + r'\b', '', prompt)
+    return prompt
 
             

@@ -7,17 +7,18 @@ from dotenv import load_dotenv
 from PIL import Image
 from vertexai.preview.vision_models import ImageGenerationModel
 from image_creator.stable_diffusion_openvino.makeImage import reduceTool
-from utils.parseUtils import create_dict, check_dup
+from utils.parseUtils import create_dict, check_dup, remove_child_terms
 
 
 def create_vertex_image(prompt, output_file):
     """Sends prompt to Vertex AI to generate an image, saves to write path"""
+    new_prompt = remove_child_terms(prompt)
     vertexai.init()
     model = ImageGenerationModel.from_pretrained("imagegeneration@002")
-    print(f"Generating image for: {prompt}")
+    print(f"Generating image for: {new_prompt}")
 
     images = model.generate_images(
-        prompt=prompt,
+        prompt=new_prompt,
         number_of_images=1,
         language="en",
         aspect_ratio="1:1"
