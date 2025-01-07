@@ -6,26 +6,31 @@ from tinydb import TinyDB
 from dotenv import load_dotenv
 from PIL import Image
 from vertexai.preview.vision_models import ImageGenerationModel
+from vertexai.generative_models import GenerativeModel
 from image_creator.stable_diffusion_openvino.makeImage import reduceTool
 from utils.parseUtils import create_dict, check_dup, remove_child_terms
 
 
 def create_vertex_image(prompt, output_file):
     """Sends prompt to Vertex AI to generate an image, saves to write path"""
-    new_prompt = remove_child_terms(prompt)
     vertexai.init()
     model = ImageGenerationModel.from_pretrained("imagegeneration@002")
-    print(f"Generating image for: {new_prompt}")
-
+    print(f"Generating image for: {prompt}")
     images = model.generate_images(
-        prompt=new_prompt,
+        prompt=prompt,
         number_of_images=1,
         language="en",
         aspect_ratio="1:1"
     )
-
     images[0].save(location=output_file, include_generation_parameters=False)
 
+def create_vertex_prompt(title, body):
+    """Creates a prompt for Vertex AI from title and body"""
+    vertexai.init()
+    model = GenerativeModel("gemini-1.5-flash-002")
+    response = model.generate_content("The following is a title and description for an item in a craiglist post.  Respond with a succinct prompt that will enable google vertex to generate an image for it. Alter any terms that would trigger google safety settings. The title is: " + title + " and the description is: " + body + ". The image should be a cellphone photograph and a rough photo typical of a self-posted ad on craiglist. Respond with the prompt only")
+    prompt = response.text
+    return prompt
 
 def add_items_to_db():
     """Updates Active Db with new items from txt file"""
@@ -38,11 +43,12 @@ def add_items_to_db():
     for key, value in data.items():
         if not check_dup(db, key) and not check_dup(db2, key):
             print(f"Found new record, inserting {key}")
+            prompt = create_vertex_prompt(key, value)
             output_file = re.sub('[^A-Za-z0-9]+', '', key)
             write_path = f"{img_file_path}{output_file}.png"
             choice = False
             while choice is False:
-                create_vertex_image(f"{key}, cellphone photograph", write_path)
+                create_vertex_image(prompt, write_path)
                 reduceTool(write_path)
                 im = Image.open(write_path)
                 im.show()
