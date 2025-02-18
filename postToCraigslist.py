@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from tinydb import TinyDB
 from utils.postUtils import post
 from utils.dbUtils import getPostFromDb, deletePostFromDb
-from utils.textUtils import ngrok_server, send_twilio_with_image
+from utils.textUtils import ngrok_server, send_twilio_with_image, make_image_square
 
 async def main():
     load_dotenv()
@@ -20,15 +20,22 @@ async def main():
     output_file = re.sub('[^A-Za-z0-9]+', '', listing.title)
     filename = f"{output_file}.png"
     write_path = f"{img_file_path}{filename}"
-    post_link = await post(listing, write_path)
+    await post(listing, write_path)
     deletePostFromDb(db, db2, listing)
-    print(f"Attempting to text the following file: {ngrok_url}{filename}")
+    square_image_file = make_image_square(f"{screenshot_file_path}{filename}")
+    print(f"Attempting to text the following file: {ngrok_url}{square_image_file}")
     p1 = multiprocessing.Process(target=ngrok_server)
-    p2 = multiprocessing.Process(target=send_twilio_with_image, args=(listing.title, f"{ngrok_url}{filename}"))
+    p2 = multiprocessing.Process(target=send_twilio_with_image, args=(listing.title, f"{ngrok_url}{square_image_file}"))
     p1.start()
     time.sleep(10)
     p2.start()
+    time.sleep(10)
+    p2.join()
+    p1.terminate()
+    p1.join()
     
+    print(f"Processes have been terminated. Listings remaining: {len(db)}.")
+
 if __name__ == "__main__":
     asyncio.run(main())
 
